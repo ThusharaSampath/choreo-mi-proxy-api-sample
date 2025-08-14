@@ -1,0 +1,197 @@
+openapi: 3.0.3
+info:
+  title: ProxyIssue WSO2 Micro Integrator API
+  description: |
+    WSO2 Micro Integrator proxy service API for ProxyIssue project.
+    This API provides test proxy functionality through the WSO2 MI runtime.
+  version: 1.0.0
+  contact:
+    name: WSO2
+    url: https://wso2.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://localhost:8290
+    description: Local WSO2 Micro Integrator Server (HTTP)
+  - url: https://localhost:8253
+    description: Local WSO2 Micro Integrator Server (HTTPS)
+  - url: http://localhost:8280
+    description: Alternative HTTP port (with offset)
+  - url: https://localhost:8243
+    description: Alternative HTTPS port (with offset)
+
+paths:
+  /services/testproxy:
+    post:
+      summary: Test Proxy Service
+      description: |
+        Simple test proxy service that returns a JSON response with a greeting message.
+        This proxy accepts any request and returns a fixed JSON payload.
+      operationId: testProxy
+      tags:
+        - Proxy Services
+      requestBody:
+        description: Request payload (any content type accepted)
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              example:
+                message: "Test request"
+          application/xml:
+            schema:
+              type: string
+              example: |
+                <?xml version="1.0" encoding="UTF-8"?>
+                <request>
+                  <message>Test request</message>
+                </request>
+          text/plain:
+            schema:
+              type: string
+              example: "Test request"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Hello:
+                    type: string
+                    description: Greeting message
+                    example: "Proxy"
+                required:
+                  - Hello
+              example:
+                Hello: "Proxy"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    get:
+      summary: Test Proxy Service (GET)
+      description: |
+        GET endpoint for the test proxy service.
+        Returns the same fixed JSON payload regardless of the request method.
+      operationId: testProxyGet
+      tags:
+        - Proxy Services
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Hello:
+                    type: string
+                    description: Greeting message
+                    example: "Proxy"
+                required:
+                  - Hello
+              example:
+                Hello: "Proxy"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /services/testproxy?wsdl:
+    get:
+      summary: Get WSDL for Test Proxy Service
+      description: Retrieve the WSDL (Web Services Description Language) definition for the test proxy service
+      operationId: getTestProxyWsdl
+      tags:
+        - WSDL
+      responses:
+        '200':
+          description: WSDL content
+          content:
+            application/xml:
+              schema:
+                type: string
+                description: WSDL XML content
+        '404':
+          description: WSDL not found
+
+  /healthz:
+    get:
+      summary: Health Check
+      description: Basic health check endpoint for the WSO2 Micro Integrator server
+      operationId: healthCheck
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "UP"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      description: Standard error response format
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Error code
+              example: "INTERNAL_ERROR"
+            message:
+              type: string
+              description: Error message
+              example: "An internal server error occurred"
+            details:
+              type: string
+              description: Additional error details
+              example: "Processing failed in sequence"
+      required:
+        - error
+
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Basic authentication for secured endpoints
+    
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication
+
+tags:
+  - name: Proxy Services
+    description: WSO2 MI Proxy Service endpoints
+  - name: WSDL
+    description: WSDL endpoints for service definitions
+  - name: Health
+    description: Health check and monitoring endpoints
+
+externalDocs:
+  description: WSO2 Micro Integrator Documentation
+  url: https://apim.docs.wso2.com/en/4.4.0/integrate/develop/creating-artifacts/creating-a-proxy-service/
